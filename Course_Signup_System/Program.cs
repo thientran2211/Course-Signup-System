@@ -1,3 +1,6 @@
+using Course_Signup_System.Data;
+using Microsoft.EntityFrameworkCore;
+
 namespace Course_Signup_System
 {
     public class Program
@@ -12,6 +15,12 @@ namespace Course_Signup_System
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
+
+            // Register SQL Server
+            builder.Services.AddDbContext<CourseSignupContext>(options =>
+            {
+                options.UseSqlServer(builder.Configuration.GetConnectionString("SqlServerConnection"));
+            });
 
             var app = builder.Build();
 
