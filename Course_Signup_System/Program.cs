@@ -1,4 +1,6 @@
 using Course_Signup_System.Data;
+using Course_Signup_System.Interfaces;
+using Course_Signup_System.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace Course_Signup_System
@@ -21,6 +23,10 @@ namespace Course_Signup_System
             {
                 options.UseSqlServer(builder.Configuration.GetConnectionString("SqlServerConnection"));
             });
+
+            // DI Services
+            builder.Services.AddScoped<IRoleService, RoleService>();
+            builder.Services.AddScoped<IUserService, UserService>();
 
             var app = builder.Build();
 
