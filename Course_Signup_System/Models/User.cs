@@ -1,4 +1,6 @@
-﻿namespace Course_Signup_System.Models
+﻿using System.Text.Json.Serialization;
+
+namespace Course_Signup_System.Models
 {
     public class User
     {
@@ -10,6 +12,7 @@
 
         public int RoleId { get; set; }
 
+        [JsonIgnore]
         public Role? Role { get; set; }
     }
 }

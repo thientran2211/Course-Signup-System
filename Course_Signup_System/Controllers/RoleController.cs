@@ -26,7 +26,7 @@ namespace Course_Signup_System.Controllers
             return Ok(roles);
         }
 
-        [HttpGet("id")]
+        [HttpGet("{id}")]
         public async Task<IActionResult> GetRole(int id)
         {
             var role = await roleService.GetRoleAsync(id);
@@ -48,7 +48,7 @@ namespace Course_Signup_System.Controllers
             return Ok(role);
         }
 
-        [HttpPut("id")]
+        [HttpPut("{id}")]
         public async Task<IActionResult> UpdateRole(int id, RoleDto roleDto)
         {
             var role = await roleService.UpdateRoleAsync(id, roleDto);
@@ -59,7 +59,7 @@ namespace Course_Signup_System.Controllers
             return Ok(role);
         }
 
-        [HttpDelete("id")]
+        [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteRole(int id)
         {
             await roleService.DeleteRoleAsync(id);

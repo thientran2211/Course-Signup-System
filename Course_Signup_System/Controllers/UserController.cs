@@ -22,7 +22,7 @@ namespace Course_Signup_System.Controllers
             return Ok(users);
         }
 
-        [HttpGet("id")]
+        [HttpGet("{id}")]
         public async Task<IActionResult> GetUserById(int id)
         {
             var user = await userService.GetUserAsync(id);
@@ -36,14 +36,14 @@ namespace Course_Signup_System.Controllers
             return Ok(user);
         }
 
-        [HttpPut("id")]
+        [HttpPut("{id}")]
         public async Task<IActionResult> UpdateUser(int id, UserDto userDto)
         {
             var user = await userService.UpdateUserAsync(id, userDto);
             return Ok(user);
         }
 
-        [HttpDelete("id")]
+        [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteUser(int id)
         {
             await userService.DeleteUserAsync(id);
