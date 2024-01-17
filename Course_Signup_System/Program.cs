@@ -28,6 +28,7 @@ namespace Course_Signup_System
             builder.Services.AddScoped<IRoleService, RoleService>();
             builder.Services.AddScoped<IUserService, UserService>();
             builder.Services.AddScoped<IDepartmentService, DepartmentService>();
+            builder.Services.AddScoped<ISubjectGroupService, SubjectGroupService>();
 
             var app = builder.Build();
 
