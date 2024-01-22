@@ -49,7 +49,7 @@ namespace Course_Signup_System.Services
                 {
                     UserName = userDto.UserName,
                     Email = userDto.Email,
-                    Password = userDto.Password,
+                    //Password = userDto.Password,
                     RoleId = userDto.RoleId
                 };
                 _context.Users.Add(user);
@@ -71,7 +71,7 @@ namespace Course_Signup_System.Services
                     ?? throw new Exception("Doesn't exist user for this id");
                 user.UserName = userDto.UserName;
                 user.Email = userDto.Email;
-                user.Password = userDto.Password;
+                //user.Password = userDto.Password;
                 user.RoleId = userDto.RoleId;
                 _context.Users.Update(user);
                 await _context.SaveChangesAsync();

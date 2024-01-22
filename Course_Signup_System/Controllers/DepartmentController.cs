@@ -1,6 +1,5 @@
 ﻿using Course_Signup_System.DTOs;
 using Course_Signup_System.Interfaces;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Course_Signup_System.Controllers
