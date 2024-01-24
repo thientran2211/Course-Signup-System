@@ -12,20 +12,31 @@ namespace Course_Signup_System.Services
 {
     public class TokenService : ITokenService
     {
+        private readonly CourseSignupContext _dbContext;
         private readonly IConfiguration _configuration;
         private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public TokenService(IConfiguration configuration, IHttpContextAccessor httpContextAccessor)
+        public TokenService(CourseSignupContext dbContext, IConfiguration configuration, IHttpContextAccessor httpContextAccessor)
         {
             _configuration = configuration;
             _httpContextAccessor = httpContextAccessor;
+            _dbContext = dbContext;
         }
         public string CreateToken(User user)
         {
+
+            var roleName = _dbContext.Roles
+                .Where(r => r.RoleId == user.RoleId)
+                .Select(r => r.RoleName)
+                .FirstOrDefault();
+
+            roleName ??= "Admin";
+
             List<Claim> claims = new List<Claim>
             {
                 new Claim(ClaimTypes.Email, user.Email ?? string.Empty),
-                new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString())
+                new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
+                new Claim(ClaimTypes.Role, roleName)
             };
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration.GetSection("Jwt:Secret").Value));
@@ -34,7 +45,7 @@ namespace Course_Signup_System.Services
 
             var token = new JwtSecurityToken(
                 claims: claims,
-                expires: DateTime.Now.AddHours(2),
+                expires: DateTime.Now.AddHours(12),
                 signingCredentials: creds);
 
             var jwt = new JwtSecurityTokenHandler().WriteToken(token);
@@ -42,26 +53,52 @@ namespace Course_Signup_System.Services
             return jwt;
         }
 
-        public RefreshTokenDto GenerateRefreshToken()
+        public RefreshTokenDto GenerateRefreshToken(User user)
         {
-            var refreshToken = new RefreshTokenDto
+            var roleName = _dbContext.Roles
+                .Where(r => r.RoleId == user.RoleId)
+                .Select(r => r.RoleName)
+                .FirstOrDefault();
+
+            roleName ??= "Admin";
+
+            var claims = new List<Claim>
             {
-                Token = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64)),
-                Expires = DateTime.Now.AddDays(2),
+                new Claim(ClaimTypes.Email, user.Email ?? string.Empty),
+                new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
+                new Claim(ClaimTypes.Role, roleName)
             };
 
-            return refreshToken;
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration.GetSection("Jwt:Secret").Value));
+
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
+
+            var refreshToken = new JwtSecurityToken(
+                claims: claims,
+                expires: DateTime.Now.AddDays(7), // Set the expiration time for the refresh token
+                signingCredentials: creds);
+
+            var refreshTokenDto = new RefreshTokenDto
+            {
+                Token = new JwtSecurityTokenHandler().WriteToken(refreshToken),
+                Created = DateTime.Now,
+                Expires = refreshToken.ValidTo
+            };
+
+            return refreshTokenDto;
         }
 
-        public async Task SetRefreshToken(RefreshTokenDto newRefreshToken)
+        public void SetRefreshTokenInCookie(RefreshTokenDto refreshTokenDto)
         {
             var cookieOptions = new CookieOptions
             {
-                HttpOnly = true,
-                Expires = newRefreshToken.Expires
+                HttpOnly = true, // Prevents JavaScript access to the cookie
+                Secure = true,   // Send cookie only over HTTPS if available
+                Expires = refreshTokenDto.Expires
             };
 
-            _httpContextAccessor.HttpContext.Response.Cookies.Append("refreshToken", newRefreshToken.Token, cookieOptions);
+            _httpContextAccessor.HttpContext.Response.Cookies.Append("refreshToken", refreshTokenDto.Token, cookieOptions);
         }
+       
     }
 }

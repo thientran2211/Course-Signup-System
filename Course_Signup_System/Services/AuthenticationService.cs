@@ -1,5 +1,4 @@
 ﻿using Course_Signup_System.Data;
-using Course_Signup_System.DTOs;
 using Course_Signup_System.Interfaces;
 using Course_Signup_System.Models;
 using Course_Signup_System.Requests;
@@ -37,8 +36,8 @@ namespace Course_Signup_System.Services
             else
             {
                 var userToken = _tokenService.CreateToken(user);
-                var refreshToken = _tokenService.GenerateRefreshToken();
-                await _tokenService.SetRefreshToken(refreshToken);
+                var refreshToken = _tokenService.GenerateRefreshToken(user);
+                _tokenService.SetRefreshTokenInCookie(refreshToken);
 
                 int roleId = user.RoleId; // Directly get the RoleId from the user object
 

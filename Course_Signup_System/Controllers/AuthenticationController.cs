@@ -13,24 +13,20 @@ namespace Course_Signup_System.Controllers
     public class AuthenticationController : ControllerBase
     {
         private readonly IAuthenticationService _authenticationService;
-        private readonly ITokenService _tokenService;
-        private readonly CourseSignupContext _context;
 
-        public AuthenticationController(IAuthenticationService authenticationService, ITokenService tokenService, CourseSignupContext context)
+        public AuthenticationController(IAuthenticationService authenticationService)
         {
             _authenticationService = authenticationService;
-            _tokenService = tokenService;
-            _context = context;
         }
 
-        [HttpPost("Register")]
+        [HttpPost("register")]
         public async Task<IActionResult> Register(UserRegisterRequest request)
         {
             var user = await _authenticationService.Register(request);
             return Ok(user);
         }
 
-        [HttpPost("Login")]
+        [HttpPost("login")]
         public async Task<IActionResult> Login(UserLoginRequest request)
         {
             var user = await _authenticationService.Login(request);
@@ -40,8 +36,8 @@ namespace Course_Signup_System.Controllers
             }
             return Ok(user);
         }
-
-        [HttpPost("ForgotPassword")]
+       
+        [HttpPost("forgot-password")]
         public async Task<IActionResult> ForgotPassword(string email, ResetPasswordRequest request)
         {
             var user = await _authenticationService.ForgotPassword(email, request);
@@ -49,7 +45,7 @@ namespace Course_Signup_System.Controllers
             return Ok(user);
         }
 
-        [HttpPost("Logout")]
+        [HttpPost("log-out")]
         public async Task<IActionResult> Logout(string email)
         {
             var user = await _authenticationService.Logout(email);

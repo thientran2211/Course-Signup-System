@@ -7,7 +7,7 @@ namespace Course_Signup_System.Interfaces
     public interface ITokenService
     {
         public string CreateToken(User user);
-        public Task SetRefreshToken(RefreshTokenDto newRefreshToken);
-        public RefreshTokenDto GenerateRefreshToken();
+        public RefreshTokenDto GenerateRefreshToken(User user);
+        public void SetRefreshTokenInCookie(RefreshTokenDto refreshTokenDto);
     }
 }

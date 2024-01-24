@@ -4,6 +4,9 @@ using Course_Signup_System.Services;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection;
 using Microsoft.OpenApi.Models;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 namespace Course_Signup_System
 {
@@ -48,6 +51,21 @@ namespace Course_Signup_System
                 });
             });
 
+            // Register authentication service
+            builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            .AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration.GetSection("Jwt:Secret").Value)),
+                    ValidateIssuer = false,
+                    ValidateAudience = false,
+                    ValidateLifetime = true,
+                    ClockSkew = TimeSpan.Zero
+                };
+            });
+
             // Register SQL Server
             builder.Services.AddDbContext<CourseSignupContext>(options =>
             {
@@ -57,7 +75,7 @@ namespace Course_Signup_System
             // Register HttpContextAccessor
             builder.Services.AddHttpContextAccessor();
 
-            // DI Services
+            // Dependency Injection Services
             builder.Services.AddScoped<IRoleService, RoleService>();
             builder.Services.AddScoped<IUserService, UserService>();
             builder.Services.AddScoped<IDepartmentService, DepartmentService>();
@@ -78,6 +96,8 @@ namespace Course_Signup_System
             }
 
             app.UseHttpsRedirection();
+
+            app.UseAuthentication();
 
             app.UseAuthorization();
 
