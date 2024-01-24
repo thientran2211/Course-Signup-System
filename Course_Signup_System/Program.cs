@@ -2,6 +2,8 @@ using Course_Signup_System.Data;
 using Course_Signup_System.Interfaces;
 using Course_Signup_System.Services;
 using Microsoft.EntityFrameworkCore;
+using System.Reflection;
+using Microsoft.OpenApi.Models;
 
 namespace Course_Signup_System
 {
@@ -16,7 +18,35 @@ namespace Course_Signup_System
             builder.Services.AddControllers();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen();
+            builder.Services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "Course Signup System API", Version = "v1" });
+
+                // Configure Swagger to use JWT Bearer authentication
+                c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+                {
+                    Type = SecuritySchemeType.Http,
+                    Scheme = "bearer",
+                    BearerFormat = "JWT",
+                    In = ParameterLocation.Header,
+                    Description = "Enter 'Bearer {token}' to access this API",
+                });
+
+                c.AddSecurityRequirement(new OpenApiSecurityRequirement
+                {
+                    {
+                        new OpenApiSecurityScheme
+                        {
+                            Reference = new OpenApiReference
+                            {
+                                Type = ReferenceType.SecurityScheme,
+                                Id = "Bearer"
+                            }
+                        },
+                        new string[] { }
+                    }
+                });
+            });
 
             // Register SQL Server
             builder.Services.AddDbContext<CourseSignupContext>(options =>
@@ -24,12 +54,16 @@ namespace Course_Signup_System
                 options.UseSqlServer(builder.Configuration.GetConnectionString("SqlServerConnection"));
             });
 
+            // Register HttpContextAccessor
+            builder.Services.AddHttpContextAccessor();
+
             // DI Services
             builder.Services.AddScoped<IRoleService, RoleService>();
             builder.Services.AddScoped<IUserService, UserService>();
             builder.Services.AddScoped<IDepartmentService, DepartmentService>();
             builder.Services.AddScoped<ISubjectGroupService, SubjectGroupService>();
             builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
+            builder.Services.AddScoped<ITokenService, TokenService>();
 
             var app = builder.Build();
 
@@ -37,13 +71,15 @@ namespace Course_Signup_System
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
-                app.UseSwaggerUI();
+                app.UseSwaggerUI(c =>
+                {
+                    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Course Signup System API V1");
+                });
             }
 
             app.UseHttpsRedirection();
 
             app.UseAuthorization();
-
 
             app.MapControllers();
 

@@ -1,13 +1,10 @@
-﻿using Course_Signup_System.Authentication;
-using Course_Signup_System.Data;
+﻿using Course_Signup_System.Data;
+using Course_Signup_System.DTOs;
 using Course_Signup_System.Interfaces;
 using Course_Signup_System.Models;
 using Course_Signup_System.Requests;
 using Course_Signup_System.Responses;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -16,38 +13,51 @@ namespace Course_Signup_System.Services
     public class AuthenticationService : IAuthenticationService
     {
         private readonly CourseSignupContext _dbContext;
-        private readonly IConfiguration _configuration;
+        private readonly ITokenService _tokenService;
 
-        public AuthenticationService(CourseSignupContext dbContext, IConfiguration configuration)
+        public AuthenticationService(CourseSignupContext dbContext, ITokenService tokenService)
         {
             _dbContext = dbContext;
-            _configuration = configuration;
+            _tokenService = tokenService;
         }
 
         public async Task<LoginResponse> Login(UserLoginRequest request)
         {
-            var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
+            var user = await _dbContext.Users!.FirstOrDefaultAsync(u => u.Email == request.Email);
+
             if (user == null)
             {
                 throw new BadHttpRequestException("User not found!");
             }
 
-            if (!VerifyPasswordHash(request.Password, user.PasswordHash, user.PasswordSalt))
+            else if (!VerifyPasswordHash(request.Password, user.PasswordHash, user.PasswordSalt))
             {
                 throw new BadHttpRequestException("Password is incorrect!");
             }
-            
-            var token = CreateToken(user);
-            var roleName = GetUserRole(user.RoleId);
-
-            return new LoginResponse 
+            else
             {
-                Email = request.Email,
-                Token = token,
-                RoleName = roleName,
-            };            
+                var userToken = _tokenService.CreateToken(user);
+                var refreshToken = _tokenService.GenerateRefreshToken();
+                await _tokenService.SetRefreshToken(refreshToken);
+
+                int roleId = user.RoleId; // Directly get the RoleId from the user object
+
+                user.RefreshToken = refreshToken.Token;
+                user.TokenCreated = refreshToken.Created;
+                user.TokenExpires = refreshToken.Expires;
+                user.RoleId = roleId;
+
+                await _dbContext.SaveChangesAsync();
+
+                return new LoginResponse 
+                {
+                    Email = request.Email,
+                    Token = userToken,
+                    RefreshToken = refreshToken.Token
+                };
+            }
         }
-     
+
         public async Task<User> Register(UserRegisterRequest request)
         {
             if (_dbContext.Users.Any(u => u.Email == request.Email))
@@ -89,28 +99,7 @@ namespace Course_Signup_System.Services
 
             return new ForgotPasswordResponse { Email = email, PasswordHash = passwordHash, PasswordSalt = passwordSalt };
         }
-
-        private string CreateToken(User user)
-        {
-            List<Claim> claims = new List<Claim>
-            {
-                new Claim(ClaimTypes.Email, user.Email ?? string.Empty),
-            };
-
-            var key = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(_configuration.GetSection("Jwt:Secret").Value));
-
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
-
-            var token = new JwtSecurityToken(
-                claims: claims,
-                expires: DateTime.Now.AddHours(1),
-                signingCredentials: creds);
-
-            var jwt = new JwtSecurityTokenHandler().WriteToken(token);
-
-            return jwt;
-        }
-
+        
         private void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt)
         {
             using (var hmac = new HMACSHA512())
@@ -129,11 +118,21 @@ namespace Course_Signup_System.Services
             }
         }
 
-        public string GetUserRole(int roleId)
+        public async Task<LoginResponse> Logout(string email)
         {
-            string roleName = _dbContext.Roles.SingleOrDefault(u => u.RoleId == roleId).RoleName
-                ?? string.Empty;
-            return roleName;
+            var user = await _dbContext.Users.SingleOrDefaultAsync(u => u.Email == email);
+
+            if (user == null)
+            {
+                throw new Exception("User not found!");
+            }
+
+            return new LoginResponse
+            {
+                Email = null,
+                Token = null,
+                RefreshToken = null,
+            };
         }
     }
 }
