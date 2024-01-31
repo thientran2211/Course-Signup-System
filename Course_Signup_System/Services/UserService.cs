@@ -3,6 +3,8 @@ using Course_Signup_System.DTOs;
 using Course_Signup_System.Interfaces;
 using Course_Signup_System.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace Course_Signup_System.Services
 {
@@ -33,7 +35,7 @@ namespace Course_Signup_System.Services
             try
             {
                 var user = await _context.Users.FindAsync(id);
-                return user == null ? throw new NotImplementedException() : user;
+                return user ?? throw new NotImplementedException();
             }
             catch
             {
@@ -45,11 +47,14 @@ namespace Course_Signup_System.Services
         {
             try
             {
+                CreatePasswordHash(userDto.Password, out byte[] passwordHash, out byte[] passwordSalt);
+                 
                 var user = new User
                 {
                     UserName = userDto.UserName,
                     Email = userDto.Email,
-                    //Password = userDto.Password,
+                    PasswordHash = passwordHash,
+                    PasswordSalt = passwordSalt,
                     RoleId = userDto.RoleId
                 };
                 _context.Users.Add(user);
@@ -69,10 +74,15 @@ namespace Course_Signup_System.Services
             {
                 var user = await _context.Users.FindAsync(id) 
                     ?? throw new Exception("Doesn't exist user for this id");
+
+                CreatePasswordHash(userDto.Password, out byte[] passwordHash, out byte[] passwordSalt);
+
                 user.UserName = userDto.UserName;
                 user.Email = userDto.Email;
-                //user.Password = userDto.Password;
+                user.PasswordHash = passwordHash;
+                user.PasswordSalt = passwordSalt;
                 user.RoleId = userDto.RoleId;
+
                 _context.Users.Update(user);
                 await _context.SaveChangesAsync();
                 return user;
@@ -90,6 +100,15 @@ namespace Course_Signup_System.Services
                 await _context.SaveChangesAsync();
             }
             catch { throw new NotImplementedException(); }
-        }             
+        }
+
+        private void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt)
+        {
+            using (var hmac = new HMACSHA512())
+            {
+                passwordSalt = hmac.Key;
+                passwordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(password));
+            }
+        }
     }
 }

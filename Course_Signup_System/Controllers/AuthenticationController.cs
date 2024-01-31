@@ -1,10 +1,6 @@
-﻿using Course_Signup_System.Data;
-using Course_Signup_System.Interfaces;
-using Course_Signup_System.Models;
+﻿using Course_Signup_System.Interfaces;
 using Course_Signup_System.Requests;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using System.Security.Claims;
 
 namespace Course_Signup_System.Controllers
 {
@@ -45,7 +41,7 @@ namespace Course_Signup_System.Controllers
             return Ok(user);
         }
 
-        [HttpPost("log-out")]
+        [HttpPost("logout")]
         public async Task<IActionResult> Logout(string email)
         {
             var user = await _authenticationService.Logout(email);

@@ -66,6 +66,20 @@ namespace Course_Signup_System
                 };
             });
 
+            // CORS service
+            var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
+
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy(MyAllowSpecificOrigins,
+                                        policy =>
+                                        {
+                                            policy.WithOrigins("*")
+                                                  .AllowAnyHeader()
+                                                  .AllowAnyMethod();
+                                        });
+            });
+
             // Register SQL Server
             builder.Services.AddDbContext<CourseSignupContext>(options =>
             {
@@ -76,12 +90,25 @@ namespace Course_Signup_System
             builder.Services.AddHttpContextAccessor();
 
             // Dependency Injection Services
+            builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
+            builder.Services.AddScoped<ITokenService, TokenService>();
             builder.Services.AddScoped<IRoleService, RoleService>();
             builder.Services.AddScoped<IUserService, UserService>();
             builder.Services.AddScoped<IDepartmentService, DepartmentService>();
             builder.Services.AddScoped<ISubjectGroupService, SubjectGroupService>();
-            builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
-            builder.Services.AddScoped<ITokenService, TokenService>();
+            builder.Services.AddScoped<ICourseService, CourseService>();
+            builder.Services.AddScoped<IHolidayService, HolidayService>();
+            builder.Services.AddScoped<ISubjectService, SubjectService>();
+            builder.Services.AddScoped<ISubjectGradeTypeService, SubjectGradeTypeService>();
+            builder.Services.AddScoped<IScoreTypeService, ScoreTypeService>();
+            builder.Services.AddScoped<ILecturerService, LecturerService>();
+            builder.Services.AddScoped<IClassService, ClassService>();
+            builder.Services.AddScoped<ILecturingScheduleService, LecturingScheduleService>();
+            builder.Services.AddScoped<IStudentService, StudentService>();
+            builder.Services.AddScoped<IStudentScheduleService, StudentScheduleService>();
+            builder.Services.AddScoped<ITuitionFeeService, TuitionFeeService>();
+            builder.Services.AddScoped<IEmployeeSalaryService, EmployeeSalaryService>();
+            builder.Services.AddScoped<IRevenueService,  RevenueService>();
 
             var app = builder.Build();
 
@@ -96,6 +123,8 @@ namespace Course_Signup_System
             }
 
             app.UseHttpsRedirection();
+
+            app.UseCors(MyAllowSpecificOrigins);
 
             app.UseAuthentication();
 

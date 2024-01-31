@@ -30,6 +30,9 @@ namespace Course_Signup_System.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ClassId"), 1L, 1);
 
+                    b.Property<string>("ClassCode")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("ClassName")
                         .HasColumnType("nvarchar(max)");
 
@@ -39,7 +42,7 @@ namespace Course_Signup_System.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("Fee")
+                    b.Property<int>("Fee")
                         .HasColumnType("int");
 
                     b.Property<string>("Image")
@@ -48,7 +51,7 @@ namespace Course_Signup_System.Migrations
                     b.Property<int?>("LecturingScheduleId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("NumberOfStudent")
+                    b.Property<int>("NumberOfStudent")
                         .HasColumnType("int");
 
                     b.Property<string>("SchoolYear")
@@ -101,6 +104,34 @@ namespace Course_Signup_System.Migrations
                     b.HasKey("DepartmentId");
 
                     b.ToTable("Departments");
+                });
+
+            modelBuilder.Entity("Course_Signup_System.Models.EmployeeSalary", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<int>("Allowance")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ClassId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("LecturerId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SalaryPercent")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("TotalSalary")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("EmployeeSalarys");
                 });
 
             modelBuilder.Entity("Course_Signup_System.Models.Holiday", b =>
@@ -158,8 +189,13 @@ namespace Course_Signup_System.Migrations
                     b.Property<string>("MainSubject")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Password")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<byte[]>("PasswordHash")
+                        .IsRequired()
+                        .HasColumnType("varbinary(max)");
+
+                    b.Property<byte[]>("PasswordSalt")
+                        .IsRequired()
+                        .HasColumnType("varbinary(max)");
 
                     b.Property<string>("Phone")
                         .HasColumnType("nvarchar(max)");
@@ -213,6 +249,8 @@ namespace Course_Signup_System.Migrations
 
                     b.HasIndex("LecturerId");
 
+                    b.HasIndex("SubjectId");
+
                     b.ToTable("LecturingSchedules");
                 });
 
@@ -242,6 +280,9 @@ namespace Course_Signup_System.Migrations
 
                     b.Property<string>("Name")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("ScoreScale")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -283,8 +324,13 @@ namespace Course_Signup_System.Migrations
                     b.Property<string>("ParentName")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Password")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<byte[]>("PasswordHash")
+                        .IsRequired()
+                        .HasColumnType("varbinary(max)");
+
+                    b.Property<byte[]>("PasswordSalt")
+                        .IsRequired()
+                        .HasColumnType("varbinary(max)");
 
                     b.Property<string>("Phone")
                         .HasColumnType("nvarchar(max)");
@@ -304,6 +350,39 @@ namespace Course_Signup_System.Migrations
                     b.ToTable("Students");
                 });
 
+            modelBuilder.Entity("Course_Signup_System.Models.StudentSchedule", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<string>("Class")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Day")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Period")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("StudentId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SubjectId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Time")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("StudentId");
+
+                    b.ToTable("StudentSchedules");
+                });
+
             modelBuilder.Entity("Course_Signup_System.Models.Subject", b =>
                 {
                     b.Property<int>("SubjectId")
@@ -315,8 +394,8 @@ namespace Course_Signup_System.Migrations
                     b.Property<int>("DepartmentId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("LecturingScheduleId")
-                        .HasColumnType("int");
+                    b.Property<string>("SubjectCode")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("SubjectGroupId")
                         .HasColumnType("int");
@@ -327,8 +406,6 @@ namespace Course_Signup_System.Migrations
                     b.HasKey("SubjectId");
 
                     b.HasIndex("DepartmentId");
-
-                    b.HasIndex("LecturingScheduleId");
 
                     b.HasIndex("SubjectGroupId");
 
@@ -393,7 +470,10 @@ namespace Course_Signup_System.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
-                    b.Property<int?>("ClassId")
+                    b.Property<int>("AmountTuition")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ClassId")
                         .HasColumnType("int");
 
                     b.Property<int?>("Discount")
@@ -405,8 +485,11 @@ namespace Course_Signup_System.Migrations
                     b.Property<string>("Note")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("StudentId")
+                    b.Property<int>("StudentId")
                         .HasColumnType("int");
+
+                    b.Property<decimal>("TotalTuition")
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("Type")
                         .HasColumnType("nvarchar(max)");
@@ -442,6 +525,9 @@ namespace Course_Signup_System.Migrations
                         .IsRequired()
                         .HasColumnType("varbinary(max)");
 
+                    b.Property<string>("RefreshToken")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int>("RoleId")
                         .HasColumnType("int");
 
@@ -456,8 +542,7 @@ namespace Course_Signup_System.Migrations
 
                     b.HasKey("UserId");
 
-                    b.HasIndex("RoleId")
-                        .IsUnique();
+                    b.HasIndex("RoleId");
 
                     b.ToTable("Users");
                 });
@@ -503,7 +588,15 @@ namespace Course_Signup_System.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("Course_Signup_System.Models.Subject", "Subject")
+                        .WithMany()
+                        .HasForeignKey("SubjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.Navigation("Lecturer");
+
+                    b.Navigation("Subject");
                 });
 
             modelBuilder.Entity("Course_Signup_System.Models.Student", b =>
@@ -525,6 +618,17 @@ namespace Course_Signup_System.Migrations
                     b.Navigation("Role");
                 });
 
+            modelBuilder.Entity("Course_Signup_System.Models.StudentSchedule", b =>
+                {
+                    b.HasOne("Course_Signup_System.Models.Student", "Student")
+                        .WithMany()
+                        .HasForeignKey("StudentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Student");
+                });
+
             modelBuilder.Entity("Course_Signup_System.Models.Subject", b =>
                 {
                     b.HasOne("Course_Signup_System.Models.Department", "Department")
@@ -532,10 +636,6 @@ namespace Course_Signup_System.Migrations
                         .HasForeignKey("DepartmentId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.HasOne("Course_Signup_System.Models.LecturingSchedule", null)
-                        .WithMany("Subjects")
-                        .HasForeignKey("LecturingScheduleId");
 
                     b.HasOne("Course_Signup_System.Models.SubjectGroup", "SubjectGroup")
                         .WithMany("Subjects")
@@ -579,11 +679,15 @@ namespace Course_Signup_System.Migrations
                 {
                     b.HasOne("Course_Signup_System.Models.Class", "Class")
                         .WithMany()
-                        .HasForeignKey("ClassId");
+                        .HasForeignKey("ClassId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("Course_Signup_System.Models.Student", "Student")
                         .WithMany("TuitionFees")
-                        .HasForeignKey("StudentId");
+                        .HasForeignKey("StudentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Class");
 
@@ -593,8 +697,8 @@ namespace Course_Signup_System.Migrations
             modelBuilder.Entity("Course_Signup_System.Models.User", b =>
                 {
                     b.HasOne("Course_Signup_System.Models.Role", "Role")
-                        .WithOne("User")
-                        .HasForeignKey("Course_Signup_System.Models.User", "RoleId")
+                        .WithMany("Users")
+                        .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -624,13 +728,11 @@ namespace Course_Signup_System.Migrations
             modelBuilder.Entity("Course_Signup_System.Models.LecturingSchedule", b =>
                 {
                     b.Navigation("Classes");
-
-                    b.Navigation("Subjects");
                 });
 
             modelBuilder.Entity("Course_Signup_System.Models.Role", b =>
                 {
-                    b.Navigation("User");
+                    b.Navigation("Users");
                 });
 
             modelBuilder.Entity("Course_Signup_System.Models.ScoreType", b =>

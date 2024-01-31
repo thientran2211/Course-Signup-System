@@ -1,4 +1,6 @@
-﻿namespace Course_Signup_System.Models
+﻿using System.Text.Json.Serialization;
+
+namespace Course_Signup_System.Models
 {
     public class LecturingSchedule
     {
@@ -12,9 +14,12 @@
         public int LecturerId { get; set; }
         public int ClassId { get; set; }
 
+        [JsonIgnore]
         public Lecturer? Lecturer { get; set; }
+        [JsonIgnore]
+        public Subject? Subject { get; set; }
 
-        public ICollection<Subject>? Subjects { get; set; }
+        [JsonIgnore]
         public ICollection<Class>? Classes { get; set; }
     }
 }

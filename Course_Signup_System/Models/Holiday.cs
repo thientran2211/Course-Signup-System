@@ -1,4 +1,6 @@
-﻿namespace Course_Signup_System.Models
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace Course_Signup_System.Models
 {
     public class Holiday
     {
